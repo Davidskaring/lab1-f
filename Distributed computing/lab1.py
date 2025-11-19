@@ -52,7 +52,7 @@ class FSMAgent(Agent):
 
 
 async def main():
-    fsmagent = FSMAgent("fsmagent@your_xmpp_server", "your_password")
+    fsmagent = FSMAgent("fsmagent@localhost", "your_password")
     await fsmagent.start()
 
     await spade.wait_until_finished(fsmagent)
