@@ -1,4 +1,4 @@
-import spade
+﻿import spade
 from spade.agent import Agent
 from spade.behaviour import FSMBehaviour, State
 from spade.message import Message
@@ -52,7 +52,7 @@ class FSMAgent(Agent):
 
 
 async def main():
-    fsmagent = FSMAgent("fsmagent@your_xmpp_server", "your_password")
+    fsmagent = FSMAgent("patrik@localhost", "your_password")
     await fsmagent.start()
 
     await spade.wait_until_finished(fsmagent)
