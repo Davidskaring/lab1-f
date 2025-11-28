@@ -14,6 +14,7 @@ STATE_CATCHING = "STATE_CATCHING"
 STATE_LOST = "STATE_LOST"
 STATE_VICTORY = "STATE_VICTORY"
 STATE_DEFEAT = "STATE_DEFEAT"
+STATE_TREE = "STATE_TREE"
 
 
 class ExampleFSMBehaviour(FSMBehaviour):
@@ -42,7 +43,22 @@ class StateCasting(State):
     async def run(self):
         print("Casting out the lure")
         await asyncio.sleep(5)
-        self.set_next_state(STATE_WAITING)
+        randomnumber = random.random()
+        if randomnumber < 0.1:
+            print("you casted in to a tree and the lure was lost")
+            self.set_next_state(STATE_TREE)
+        else:
+            self.set_next_state(STATE_WAITING)
+
+class StateTree(State):
+    async def run(self):
+        print("do you want to put on a new lure and trying again? yes or no")
+        userinput = input()
+        if userinput == "yes":
+            self.set_next_state(STATE_CASTING)
+        elif userinput == "no":
+            self.set_next_state(STATE_DEFEAT)
+
 
 
 class StateWaiting(State):
@@ -62,7 +78,8 @@ class StateFighting(State):
         print("incredible fight against 10 kg pike")
         await asyncio.sleep(5)
         randomnumber = random.random()
-        # vi använder random module
+        # vi använder random module för att slumpa ett tal mellan 0-1. Detta är för att skapa
+        # ett event av ovisshet för fiskaren, precis som i riktiga livet.
         if randomnumber > 0.5:
             print("You have managed to make the fish tired, keep fighting!")
             await asyncio.sleep(5)
@@ -95,14 +112,15 @@ class StateVictory(State):
 class StateDefeat(State):
     async def run(self):
         await asyncio.sleep(5)
-        print("you pick up the gun from your pocket")
+        print("you full of sadness and thoughts of selling your'e fishing gear enters your mind")
         await asyncio.sleep(5)
-        print("everything goes black")
+        print("you leave the lake as a broken man")
 class FSMAgent(Agent):
     async def setup(self):
         fsm = ExampleFSMBehaviour()
         fsm.add_state(name=STATE_STANDING, state=StateStanding(), initial=True)
         fsm.add_state(name=STATE_CASTING, state=StateCasting())
+        fsm.add_state(name=STATE_TREE, state=StateTree())
         fsm.add_state(name=STATE_WAITING, state=StateWaiting())
         fsm.add_state(name=STATE_BITE, state=StateBite())
         fsm.add_state(name=STATE_FIGHTING, state=StateFighting())
@@ -113,6 +131,9 @@ class FSMAgent(Agent):
         fsm.add_transition(source=STATE_STANDING, dest=STATE_CASTING)
         fsm.add_transition(source=STATE_STANDING, dest=STATE_STANDING)
         fsm.add_transition(source=STATE_CASTING, dest=STATE_WAITING)
+        fsm.add_transition(source=STATE_CASTING, dest=STATE_TREE)
+        fsm.add_transition(source=STATE_TREE, dest=STATE_CASTING)
+        fsm.add_transition(source=STATE_TREE, dest=STATE_DEFEAT)
         fsm.add_transition(source=STATE_WAITING, dest=STATE_BITE)
         fsm.add_transition(source=STATE_BITE, dest=STATE_FIGHTING)
         fsm.add_transition(source=STATE_FIGHTING, dest=STATE_CATCHING)
