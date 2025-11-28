@@ -60,17 +60,43 @@ class StateBite(State):
 class StateFighting(State):
     async def run(self):
         print("incredible fight against 10 kg pike")
+        print("The fish is fighting back hard!!")
         await asyncio.sleep(5)
-        randomnumber = random.random()
         # vi använder random module
-        if randomnumber > 0.5:
-            print("You have managed to make the fish tired, keep fighting!")
+
+        print("\nThe fish is trying to escape into the weeds!")
+        print("Do you want to put MAX PRESSURE on the fish? (yes/no)")
+        print("(YES = 80% chance to catch, but risk of line snap)")
+        print("(NO  = 20% chance to catch, playing it safe but fish might escape)")
+        #Sparar vi userinput
+        userInput = input("Write yes or no: ").lower()
+
+        lucky_roll = random.random()
+        if userInput == "yes":
+            print("You pull the rod aggresevily! The rod bends like crazy!")
             await asyncio.sleep(5)
-            self.set_next_state(STATE_CATCHING)
+            if lucky_roll < 0.8:
+                print("It worked! You turned the fish and its super tires, keep reeling!")
+                self.set_next_state(STATE_CATCHING)
+
+            else:
+                print("SNAP!!! The line could not handle the pressure...")
+                self.set_next_state(STATE_LOST)
         else:
-            print("The fish is too strong! It starts to slip..")
-            await asyncio.sleep(5)
-            self.set_next_state(STATE_LOST)
+            print("You released the pressure and continues the fight..")
+            await asyncio.sleep(2)
+            if lucky_roll < 0.2:
+                print("You turned the fish and its super tires, keep reeling!")
+                self.set_next_state(STATE_CASTING)
+            else:
+                print("The fish swam away into the grass.. sorry..")
+                print("Do you want to catch more fish?: (yes/no)")
+                userInput = input()
+                if userInput == "yes":
+                    self.set_next_state(STATE_CASTING)
+                else:
+                    exit()
+
 
 
 class StateLost(State):
