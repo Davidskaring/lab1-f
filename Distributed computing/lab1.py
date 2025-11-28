@@ -1,6 +1,7 @@
 import spade
 from spade.agent import Agent
 from spade.behaviour import FSMBehaviour, State
+import random
 from spade.message import Message
 
 STATE_STANDING = "STATE_STANDING"
@@ -9,7 +10,9 @@ STATE_WAITING = "STATE_WAITING"
 STATE_BITE = "STATE_BITE"
 STATE_FIGHTING = "STATE_FIGHTING"
 STATE_CATCHING = "STATE_CATCHING"
+STATE_LOST = "STATE_LOST"
 STATE_VICTORY = "STATE_VICTORY"
+STATE_DEFEAT = "STATE_DEFEAT"
 
 
 class ExampleFSMBehaviour(FSMBehaviour):
@@ -23,11 +26,14 @@ class ExampleFSMBehaviour(FSMBehaviour):
 
 class StateStanding(State):
     async def run(self):
-        print("I'm standing at the lake")
-        msg = Message(to=str(self.agent.jid))
-        msg.body = "msg_from_state_one_to_state_three"
-        await self.send(msg)
-        self.set_next_state(STATE_CASTING)
+        print("I'm standing at the lake on a beautiful day")
+        print("do you wan to fish? yes or no")
+        userinput = input()
+        if userinput == "yes":
+            self.set_next_state(STATE_CASTING)
+        elif userinput == "no":
+            print("Goes home for today and returns the next day")
+            self.set_next_state(STATE_STANDING)
 
 
 class StateCasting(State):
@@ -39,9 +45,7 @@ class StateCasting(State):
 class StateWaiting(State):
     async def run(self):
         print("I'm waiting for a fish to bite")
-        msg = await self.receive(timeout=5)
-        print(f"State Three received message {msg.body}")
-        # no final state is setted, since this is a final state
+
         self.set_next_state(STATE_BITE)
 
 class StateBite(State):
@@ -52,7 +56,21 @@ class StateBite(State):
 class StateFighting(State):
     async def run(self):
         print("incredible fight against 10 kg pike")
-        self.set_next_state(STATE_CATCHING)
+        randomnumber = random.random()
+        if randomnumber > 0.5:
+            print("You have managed to make the fish tired, keep fighting!")
+            self.set_next_state(STATE_CATCHING)
+        else:
+            print("The fish is too strong! It starts to slip..")
+            self.set_next_state(STATE_LOST)
+
+
+class StateLost(State):
+    async def run(self):
+        print("The fish was lost")
+        print("feeling like the worst fisherman in history")
+        self.set_next_state(STATE_DEFEAT)
+
 
 class StateCatching(State):
     async def run(self):
@@ -63,6 +81,10 @@ class StateVictory(State):
     async def run(self):
         print("Celebrates catching the fish of a lifetime with a cold beer")
 
+class StateDefeat(State):
+    async def run(self):
+        print("you pick up the gun from your pocket")
+        print("everything goes black")
 class FSMAgent(Agent):
     async def setup(self):
         fsm = ExampleFSMBehaviour()
@@ -73,17 +95,22 @@ class FSMAgent(Agent):
         fsm.add_state(name=STATE_FIGHTING, state=StateFighting())
         fsm.add_state(name=STATE_CATCHING, state=StateCatching())
         fsm.add_state(name=STATE_VICTORY, state=StateVictory())
+        fsm.add_state(name=STATE_LOST, state=StateLost())
+        fsm.add_state(name=STATE_DEFEAT, state=StateDefeat())
         fsm.add_transition(source=STATE_STANDING, dest=STATE_CASTING)
+        fsm.add_transition(source=STATE_STANDING, dest=STATE_STANDING)
         fsm.add_transition(source=STATE_CASTING, dest=STATE_WAITING)
         fsm.add_transition(source=STATE_WAITING, dest=STATE_BITE)
         fsm.add_transition(source=STATE_BITE, dest=STATE_FIGHTING)
         fsm.add_transition(source=STATE_FIGHTING, dest=STATE_CATCHING)
+        fsm.add_transition(source=STATE_FIGHTING, dest=STATE_LOST)
         fsm.add_transition(source=STATE_CATCHING, dest=STATE_VICTORY)
+        fsm.add_transition(source=STATE_LOST, dest=STATE_DEFEAT)
         self.add_behaviour(fsm)
 
 
 async def main():
-    fsmagent = FSMAgent("h23davsk@jabbers.one/pidgin", "Kaffesump")
+    fsmagent = FSMAgent("h23patpe@conversations.im", "Jhgblo10")
     await fsmagent.start()
 
     await spade.wait_until_finished(fsmagent)
