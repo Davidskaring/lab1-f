@@ -62,6 +62,7 @@ class StateFighting(State):
         print("incredible fight against 10 kg pike")
         await asyncio.sleep(5)
         randomnumber = random.random()
+        # vi använder random module
         if randomnumber > 0.5:
             print("You have managed to make the fish tired, keep fighting!")
             await asyncio.sleep(5)
