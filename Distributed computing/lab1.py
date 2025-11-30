@@ -15,6 +15,7 @@ STATE_LOST = "STATE_LOST"
 STATE_VICTORY = "STATE_VICTORY"
 STATE_DEFEAT = "STATE_DEFEAT"
 STATE_TREE = "STATE_TREE"
+STATE_ENDING = "STATE_ENDING"
 
 
 class ExampleFSMBehaviour(FSMBehaviour):
@@ -115,6 +116,13 @@ class StateDefeat(State):
         print("you full of sadness and thoughts of selling your'e fishing gear enters your mind")
         await asyncio.sleep(5)
         print("you leave the lake as a broken man")
+
+class StateEnding(State):
+    async def run(self):
+        print("Celebrates catching the fish of a lifetime with a cold beer")
+        await asyncio.sleep(5)
+
+
 class FSMAgent(Agent):
     async def setup(self):
         fsm = ExampleFSMBehaviour()
@@ -128,6 +136,7 @@ class FSMAgent(Agent):
         fsm.add_state(name=STATE_VICTORY, state=StateVictory())
         fsm.add_state(name=STATE_LOST, state=StateLost())
         fsm.add_state(name=STATE_DEFEAT, state=StateDefeat())
+        fsm.add_state(name=STATE_ENDING, state=StateEnding())
         fsm.add_transition(source=STATE_STANDING, dest=STATE_CASTING)
         fsm.add_transition(source=STATE_STANDING, dest=STATE_STANDING)
         fsm.add_transition(source=STATE_CASTING, dest=STATE_WAITING)
