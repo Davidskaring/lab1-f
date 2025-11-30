@@ -7,6 +7,7 @@ from spade.message import Message
 
 STATE_STANDING = "STATE_STANDING"
 STATE_CASTING = "STATE_CASTING"
+STATE_TREE = "STATE_TREE"
 STATE_WAITING = "STATE_WAITING"
 STATE_BITE = "STATE_BITE"
 STATE_FIGHTING = "STATE_FIGHTING"
@@ -14,8 +15,8 @@ STATE_CATCHING = "STATE_CATCHING"
 STATE_LOST = "STATE_LOST"
 STATE_VICTORY = "STATE_VICTORY"
 STATE_DEFEAT = "STATE_DEFEAT"
-STATE_TREE = "STATE_TREE"
 STATE_ENDING = "STATE_ENDING"
+STATE_THEEND = "THEEND"
 
 
 class ExampleFSMBehaviour(FSMBehaviour):
@@ -110,6 +111,7 @@ class StateVictory(State):
         print("Celebrates catching the fish of a lifetime with a cold beer")
         await asyncio.sleep(5)
         print("you leave the lake as a happy angler")
+        self.set_next_state(STATE_ENDING)
 
 class StateDefeat(State):
     async def run(self):
@@ -117,12 +119,20 @@ class StateDefeat(State):
         print("you full of sadness and thoughts of selling your'e fishing gear enters your mind")
         await asyncio.sleep(5)
         print("you leave the lake as a broken man")
+        self.set_next_state(STATE_ENDING)
 
 class StateEnding(State):
     async def run(self):
         print("do you want to fish the next day as well? write: yes  or are you satsfied for the moement? write: no ")
-        await asyncio.sleep(5)
+        userinput = input()
+        if userinput == "yes":
+            self.set_next_state(STATE_STANDING)
+        elif userinput == "no":
+            self.set_next_state(STATE_THEEND)
 
+class StateTheEnd(State):
+    async def run(self):
+        print("thanks for playing Fishing day")
 
 class FSMAgent(Agent):
     async def setup(self):
@@ -138,6 +148,7 @@ class FSMAgent(Agent):
         fsm.add_state(name=STATE_LOST, state=StateLost())
         fsm.add_state(name=STATE_DEFEAT, state=StateDefeat())
         fsm.add_state(name=STATE_ENDING, state=StateEnding())
+        fsm.add_state(name=STATE_THEEND, state=StateTheEnd())
         fsm.add_transition(source=STATE_STANDING, dest=STATE_CASTING)
         fsm.add_transition(source=STATE_STANDING, dest=STATE_STANDING)
         fsm.add_transition(source=STATE_CASTING, dest=STATE_WAITING)
@@ -150,6 +161,10 @@ class FSMAgent(Agent):
         fsm.add_transition(source=STATE_FIGHTING, dest=STATE_LOST)
         fsm.add_transition(source=STATE_CATCHING, dest=STATE_VICTORY)
         fsm.add_transition(source=STATE_LOST, dest=STATE_DEFEAT)
+        fsm.add_transition(source=STATE_VICTORY, dest=STATE_ENDING)
+        fsm.add_transition(source=STATE_DEFEAT, dest=STATE_ENDING)
+        fsm.add_transition(source=STATE_ENDING, dest=STATE_STANDING)
+        fsm.add_transition(source=STATE_ENDING, dest=STATE_THEEND)
         self.add_behaviour(fsm)
 
 
