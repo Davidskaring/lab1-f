@@ -109,6 +109,7 @@ class StateVictory(State):
     async def run(self):
         print("Celebrates catching the fish of a lifetime with a cold beer")
         await asyncio.sleep(5)
+        print("you leave the lake as a happy angler")
 
 class StateDefeat(State):
     async def run(self):
@@ -119,7 +120,7 @@ class StateDefeat(State):
 
 class StateEnding(State):
     async def run(self):
-        print("Celebrates catching the fish of a lifetime with a cold beer")
+        print("do you want to fish the next day as well? write: yes  or are you satsfied for the moement? write: no ")
         await asyncio.sleep(5)
 
 
