@@ -15,7 +15,6 @@ STATE_LOST = "STATE_LOST"
 STATE_VICTORY = "STATE_VICTORY"
 STATE_DEFEAT = "STATE_DEFEAT"
 
-
 class ExampleFSMBehaviour(FSMBehaviour):
     async def on_start(self):
         print(f"FSM starting at initial state {self.current_state}")
@@ -23,7 +22,6 @@ class ExampleFSMBehaviour(FSMBehaviour):
     async def on_end(self):
         print(f"FSM finished at state {self.current_state}")
         await self.agent.stop()
-
 
 class StateStanding(State):
     async def run(self):
@@ -76,7 +74,7 @@ class StateFighting(State):
             print("You pull the rod aggresevily! The rod bends like crazy!")
             await asyncio.sleep(5)
             if lucky_roll < 0.8:
-                print("It worked! You turned the fish and its super tires, keep reeling!")
+                print("It worked! You turned the fish and its super tired, keep reeling!")
                 self.set_next_state(STATE_CATCHING)
 
             else:
@@ -136,6 +134,8 @@ class FSMAgent(Agent):
         fsm.add_state(name=STATE_VICTORY, state=StateVictory())
         fsm.add_state(name=STATE_LOST, state=StateLost())
         fsm.add_state(name=STATE_DEFEAT, state=StateDefeat())
+
+        #
         fsm.add_transition(source=STATE_STANDING, dest=STATE_CASTING)
         fsm.add_transition(source=STATE_STANDING, dest=STATE_STANDING)
         fsm.add_transition(source=STATE_CASTING, dest=STATE_WAITING)
