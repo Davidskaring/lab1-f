@@ -80,36 +80,38 @@ class StateBite(State):
         fish=""
         if randomnumber < 0.2:
             print("you have hooked a insanely huge pike")
+            fish="pike"
             self.set_next_state(STATE_FIGHTING)
-            self.agent.set("pike", fish)
+            self.agent.set("fish", fish)
         elif 0.2 <= randomnumber < 0.5:
             print("you have hooked a big perch")
+            fish = "perch"
             self.set_next_state(STATE_FIGHTING)
-            self.agent.set("perch", fish)
+            self.agent.set("fish", fish)
         elif randomnumber > 0.5:
             print("you have hooked a tiny roach")
             fish = "roach"
             self.set_next_state(STATE_FIGHTING)
-            self.agent.set("roach", fish)
+            self.agent.set("fish", fish)
 
 
 
 class StateFighting(State):
     async def run(self):
-        print("incredible fight against 10 kg pike")
+        print("you begin to fight the fish")
         await asyncio.sleep(5)
         randomnumber = random.random()
-        fishonhook= self.agent.get("perch")
+        hookedfish= self.agent.get("fish")
         # vi använder random module för att slumpa ett tal mellan 0-1. Detta är för att skapa
         # ett event av ovisshet för fiskaren, precis som i riktiga livet.
         if randomnumber > 0.5:
             print("You have managed to make the fish tired, keep fighting!")
-            print(f"{fishonhook}")
+            print(f"{hookedfish}")
             await asyncio.sleep(5)
             self.set_next_state(STATE_CATCHING)
         else:
             print("The fish is too strong! It starts to slip..")
-            print(f"{fishonhook}")
+            print(f"{hookedfish}")
             await asyncio.sleep(5)
             self.set_next_state(STATE_LOST)
 
