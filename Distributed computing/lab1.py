@@ -1,3 +1,5 @@
+from enum import nonmember
+
 import spade
 from spade.agent import Agent
 from spade.behaviour import FSMBehaviour, State
@@ -26,6 +28,7 @@ class ExampleFSMBehaviour(FSMBehaviour):
     async def on_end(self):
         print(f"FSM finished at state {self.current_state}")
         await self.agent.stop()
+
 
 
 class StateStanding(State):
@@ -71,23 +74,42 @@ class StateWaiting(State):
 
 class StateBite(State):
     async def run(self):
-        print("Insanely huge fish bites")
+        print("A Fish Bites!")
         await asyncio.sleep(5)
-        self.set_next_state(STATE_FIGHTING)
+        randomnumber = random.random()
+        fish=""
+        if randomnumber < 0.2:
+            print("you have hooked a insanely huge pike")
+            self.set_next_state(STATE_FIGHTING)
+            self.agent.set("pike", fish)
+        elif 0.2 <= randomnumber < 0.5:
+            print("you have hooked a big perch")
+            self.set_next_state(STATE_FIGHTING)
+            self.agent.set("perch", fish)
+        elif randomnumber > 0.5:
+            print("you have hooked a tiny roach")
+            fish = "roach"
+            self.set_next_state(STATE_FIGHTING)
+            self.agent.set("roach", fish)
+
+
 
 class StateFighting(State):
     async def run(self):
         print("incredible fight against 10 kg pike")
         await asyncio.sleep(5)
         randomnumber = random.random()
+        fishonhook= self.agent.get("perch")
         # vi använder random module för att slumpa ett tal mellan 0-1. Detta är för att skapa
         # ett event av ovisshet för fiskaren, precis som i riktiga livet.
         if randomnumber > 0.5:
             print("You have managed to make the fish tired, keep fighting!")
+            print(f"{fishonhook}")
             await asyncio.sleep(5)
             self.set_next_state(STATE_CATCHING)
         else:
             print("The fish is too strong! It starts to slip..")
+            print(f"{fishonhook}")
             await asyncio.sleep(5)
             self.set_next_state(STATE_LOST)
 
@@ -171,7 +193,6 @@ class FSMAgent(Agent):
 async def main():
     fsmagent = FSMAgent("h23patpe@conversations.im", "Jhgblo10")
     await fsmagent.start()
-
     await spade.wait_until_finished(fsmagent)
     await fsmagent.stop()
     print("Agent finished")
