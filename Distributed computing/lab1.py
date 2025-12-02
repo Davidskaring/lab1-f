@@ -206,7 +206,7 @@ class StateFighting3(State):
         elif winningword == "no" and userInput == "no":
             print("Slow and smooth, gently gliding it in")
             await asyncio.sleep(2)
-            self.set_next_state(STATE_CASTING)
+            self.set_next_state(STATE_CATCHING)
         else:
             print("SNAP, oh my god lost it in the end....")
             await asyncio.sleep(2)
