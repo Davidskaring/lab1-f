@@ -106,14 +106,21 @@ class StateBite(State):
             self.agent.set("fish", fish)
 
 
-
+# This class implements the core gameplay mechanic: the struggle between the angler and the fish.
+# It handles user input, random probability and state transitions based on the outcome.
 class StateFighting(State):
     async def run(self):
-
+        # Retrieve the specific fish object/string from the agent's Knowledge Base.
+        # This ensures continuity from the previous state (ex we fight the same fish we hooked).
         hookedfish = self.agent.get("fish")
         print("you begin fighting the " + hookedfish)
         print(f"The {hookedfish} is fighting back hard!!")
         await asyncio.sleep(2)
+
+
+        # Here is the user decesion phase
+        # We present the user with a tactical choice.
+        # This adds an element of agency and strategy to the simulation.
         # vi använder random module
         # ett event av ovisshet för fiskaren, precis som i riktiga livet.
         print(f"\nThe {hookedfish} is trying to escape into the weeds!")
@@ -121,28 +128,39 @@ class StateFighting(State):
         print("Do you want to put MAX PRESSURE on the fish? (yes/no)")
         print("(YES = 50% chance to catch, but risk of line snap)")
         print("(NO  = 50% chance to catch, playing it safe but fish might escape)")
-        #Sparar vi userinput
+        #Here is the probability engine
+        #We use the random module to simulate the unoredictible nature of fishing.
+        # This determines what the correct action would have been for this specific event.
         userInput = input("Write yes or no: ").lower()
         randomnumber = random.random()
         winningword = ""
 
+        # Determine the winning condation base on a 50/50 probability
         if randomnumber >= 0.5:
-            winningword = "yes"
+            winningword = "yes" # In this scenario, aggression (Max Pressure) was the right call.
 
         else:
-            winningword = "no"
+            winningword = "no" # In this scenario, patience (Playing Safe) was the right call.
 
+        # Here is our outcome evaluation
+        # We compare the users inout against the randomized winning condition
+        # First scenario: The user chose the aggresive play and it was the correct move.
         if winningword == "yes" and userInput == "yes":
             print(f"Smart choice friend, putting more pressure on the {hookedfish}")
+            # Here we store the succesful move in the agents memory for future reference.
             self.agent.set("yes", winningword)
             await asyncio.sleep(2)
+            # Here we proceed to the next stage of the fight.
             self.set_next_state(STATE_FIGHTING2)
+            # Scenario 2: The user chose passive action and it was the correct move.
         elif winningword == "no" and userInput == "no":
             print(f"Coward choice but efficient, releasing pressure on {hookedfish}")
+            # Store the successful move.
             self.agent.set("no", winningword)
             await asyncio.sleep(2)
+            # Proceed to next step of the game
             self.set_next_state(STATE_FIGHTING2)
-        else:
+        else: # Scenario 3: The user's choice did not match the random event (Failure).
             print("Noooo the fish was lost!!!!")
             await asyncio.sleep(2)
             self.set_next_state(STATE_LOST)
@@ -212,7 +230,8 @@ class StateFighting3(State):
             await asyncio.sleep(2)
             self.set_next_state(STATE_LOST)
 
-
+# This state represents the immediate aftermath of losing the fish.
+# It acts as a transitional state between the gameplay failure and the final stage in our game.
 class StateLost(State):
     async def run(self):
         print("The fish was lost")
@@ -221,13 +240,19 @@ class StateLost(State):
         self.set_next_state(STATE_DEFEAT)
 
 
+# This state represents the climax of the fishing event where the player successfully lands the fish.
+# It retrieves the specific fish type stored in the agent's memory to personalize the success message.
 class StateCatching(State):
     async def run(self):
+        # Retrieve the specific fish type from the Knowledge Base
+        # to confirm exactly what the player caught.
         hookedfish = self.agent.get("fish")
         print(f"Catch personal best {hookedfish} and cries a little")
         await asyncio.sleep(3)
         self.set_next_state(STATE_VICTORY)
 
+# This state handles the final stage in the game.
+# It serves as the final celebration phase before the agent finishes its lifecycle
 class StateVictory(State):
     async def run(self):
         print("Celebrates catching the fish of a lifetime with a cold beer")
@@ -235,6 +260,8 @@ class StateVictory(State):
         print("you leave the lake as a happy angler")
         self.set_next_state(STATE_ENDING)
 
+# This class represents the "Defeat" state.
+# The agent enters this state when the player fails to catch the fish.
 class StateDefeat(State):
     async def run(self):
         await asyncio.sleep(3)
@@ -243,6 +270,9 @@ class StateDefeat(State):
         print("you leave the lake as a broken man")
         self.set_next_state(STATE_ENDING)
 
+#Here we create a state called StateEnding that the agent calls upon when finishing the game but
+#gives some questions to the user before going to another state. If the user wants to play more he types in yes, or
+# else no. These states have different paths to go from aswell
 class StateEnding(State):
     async def run(self):
         print("do you want to fish the next day as well? write: yes  or are you satisfied for the moment? write: no ")
@@ -252,13 +282,19 @@ class StateEnding(State):
         elif userinput == "no":
             self.set_next_state(STATE_THEEND)
 
+#Here we create a state called stateTheEnd that the agent calls upon when finishing the game
 class StateTheEnd(State):
     async def run(self):
         print("thanks for playing Fishing day")
 
 class FSMAgent(Agent):
     async def setup(self):
+        # Here we create our fsm behavior object (the container)
         fsm = ExampleFSMBehaviour()
+        # Here is were we add all our states in the FSMAgent class were we first create an object fsm to later on
+        # implement and create our different states.
+        # We instaciate our state classes (like StateStanding) and register them to an FSM agent so the agent knows
+        # which state that exists.
         fsm.add_state(name=STATE_STANDING, state=StateStanding(), initial=True)
         fsm.add_state(name=STATE_CASTING, state=StateCasting())
         fsm.add_state(name=STATE_TREE, state=StateTree())
@@ -273,6 +309,8 @@ class FSMAgent(Agent):
         fsm.add_state(name=STATE_DEFEAT, state=StateDefeat())
         fsm.add_state(name=STATE_ENDING, state=StateEnding())
         fsm.add_state(name=STATE_THEEND, state=StateTheEnd())
+
+        # Here is our transitions, were one state can go to another state.
         fsm.add_transition(source=STATE_STANDING, dest=STATE_CASTING)
         fsm.add_transition(source=STATE_STANDING, dest=STATE_STANDING)
         fsm.add_transition(source=STATE_CASTING, dest=STATE_WAITING)
@@ -296,7 +334,7 @@ class FSMAgent(Agent):
         fsm.add_transition(source=STATE_ENDING, dest=STATE_THEEND)
         self.add_behaviour(fsm)
 
-
+#Here is our main program were we fire up our agent, and delegating the agent an server.
 async def main():
     fsmagent = FSMAgent("h23patpe@conversations.im", "Jhgblo10")
     await fsmagent.start()
