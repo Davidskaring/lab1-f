@@ -1,11 +1,15 @@
-from enum import nonmember
-
+#Group 7 Lab 1 - FSM Game
+#Members listed below
+# David Skaring h23davsk
+# Patrik Peterson h23patpe
+# Erik Tysklind Blomqvist h23eribl
+# Zacharias Andersson h23zacan
 import spade
 from spade.agent import Agent
 from spade.behaviour import FSMBehaviour, State
 import random
 import asyncio
-from spade.message import Message
+
 
 #here we declare the different states we will use in our fishing game
 # for the simplicity we put the states in chronological order
@@ -102,23 +106,20 @@ class StateBite(State):
         fish=""
         if randomnumber < 0.2:
             print("you have hooked a insanely huge pike")
-            print(randomnumber)
             fish="pike"
             self.set_next_state(STATE_FIGHTING)
             self.agent.set("fish", fish)
         elif 0.2 <= randomnumber < 0.5:
             print("you have hooked a big perch")
-            print(randomnumber)
             fish = "perch"
             self.set_next_state(STATE_FIGHTING)
             self.agent.set("fish", fish)
         elif randomnumber > 0.5:
             print("you have hooked a tiny roach")
-            print(randomnumber)
             fish = "roach"
             self.set_next_state(STATE_FIGHTING)
             #a intresting thing we here is from the spade agent module whihch self.agent.set() method
-            #gives us an option to store the fishes namne which is a knowledge item in this case in the agents knowlegde base.
+            #gives us an option to store the fishes name which is a knowledge item in this case in the agents knowlegde base.
             self.agent.set("fish", fish)
 
 
@@ -163,18 +164,14 @@ class StateFighting(State):
         # First scenario: The user chose the aggresive play and it was the correct move.
         if winningword == "yes" and userInput == "yes":
             print(f"Smart choice friend, putting more pressure on the {hookedfish}")
-            print(randomnumber)
             # Here we store the succesful move in the agents memory for future reference.
-            self.agent.set("yes", winningword)
             await asyncio.sleep(2)
             # Here we proceed to the next stage of the fight.
             self.set_next_state(STATE_FIGHTING2)
             # Scenario 2: The user chose passive action and it was the correct move.
         elif winningword == "no" and userInput == "no":
             print(f"Coward choice but efficient, releasing pressure on {hookedfish}")
-            print(randomnumber)
             # Store the successful move.
-            self.agent.set("no", winningword)
             await asyncio.sleep(2)
             # Proceed to next step of the game
             self.set_next_state(STATE_FIGHTING2)
