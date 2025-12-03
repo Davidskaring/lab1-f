@@ -6,8 +6,9 @@ from spade.behaviour import FSMBehaviour, State
 import random
 import asyncio
 from spade.message import Message
-#här deklarer vi dom olika statesen som vårat fiske spela kommer anvämda
-#vi har lagt dom för enkelhetens skull i kornologisk ordning
+
+#here we declare the different states we will use in our fishing game
+# for the simplicity we put the states in chronological order
 STATE_STANDING = "STATE_STANDING"
 STATE_CASTING = "STATE_CASTING"
 STATE_TREE = "STATE_TREE"
@@ -25,7 +26,11 @@ STATE_THEEND = "THEEND"
 
 #här har vi använt os av FSM behaviour för hålla kolla så att agenten slutar och börjar i rätt states under uppbyggnad
 #av spelet
-class ExampleFSMBehaviour(FSMBehaviour):
+
+#here vi declare the FSMBehavour from spade, we also use diffrenet prints to keep track of what state it start in and
+#what state it ends in.
+#this has been benefical for us during coding if we encounter a code fault and so forf
+class AgentFSMBehaviour(FSMBehaviour):
     async def on_start(self):
         print(f"FSM starting at initial state {self.current_state}")
 
@@ -40,6 +45,11 @@ class ExampleFSMBehaviour(FSMBehaviour):
 #vi använder os av asyncio sleep för att allting inte ska printas ut på en och samma gång, dettaa ger lite
 #pauser så att den känns som en "historia"
 #beroende på input användaren slussen den vidare till antingen kast staten eööer samma
+#here is our first state which has multiple prints to give the feeling of a "story" of a fishing day
+# we use a simple input parameter and a if statement so the user can choose if they want to fish this day or not.
+#we use asyncio sleep so every print is not printed at the exact same time to give a "storytelling" feeling
+# depending on the choice of the user(input) they either transition to the next state or are go back to beginning of this
+#state again
 class StateStanding(State):
     async def run(self):
         print("I'm standing at the lake on a beautiful day")
@@ -54,6 +64,9 @@ class StateStanding(State):
 
 #vi använder samma principer som i förra staten men har lagt in en chans att man råkar kasta draget i ett träd
 #detta gjorde vi genom att importera random modluen så vi på ett enkelt sätt kan slumpa en siffra mellan 0-1
+
+#We are using the same syntax/principles from the last state but we have added a state were you can accidently throw the lure into a tree
+#we did this nu importing the random module so that we could easily implement the logic of randomising a float number between 0 and 1
 class StateCasting(State):
     async def run(self):
         print("Casting out the lure")
@@ -66,6 +79,8 @@ class StateCasting(State):
             self.set_next_state(STATE_WAITING)
 #om man fastnar i ett träd får använder en möjlighet om den vil gör ett nytt försök
 # och sätta på ett nytt drag eller om den vill sluta fiska för dagen, då slussen den till "förlust" state
+#If u get stuck in a tree you'll get the opportunity to try casting again
+#and to put on a new lure or if the user wants to quit the fishing game for the day, then it will move on to STATE_LOST
 class StateTree(State):
     async def run(self):
         print("do you want to put on a new lure and trying again? yes or no")
@@ -76,13 +91,17 @@ class StateTree(State):
             self.set_next_state(STATE_DEFEAT)
 
 
-
+#this state represent the moment of wating on the fish to bite
+#much like it is in real life fishing
+#this state basicically act as an transistion state and just adds to the "story" of the game
 class StateWaiting(State):
     async def run(self):
         print("I'm waiting for a fish to bite")
         await asyncio.sleep(3)
         self.set_next_state(STATE_BITE)
 
+# Here we begin the main act of the games "story" where the fish is biting
+#we have apply the random module here to make a element of surprise in what fish can bite
 class StateBite(State):
     async def run(self):
         print("A Fish Bites!")
@@ -91,18 +110,23 @@ class StateBite(State):
         fish=""
         if randomnumber < 0.2:
             print("you have hooked a insanely huge pike")
+            print(randomnumber)
             fish="pike"
             self.set_next_state(STATE_FIGHTING)
             self.agent.set("fish", fish)
         elif 0.2 <= randomnumber < 0.5:
             print("you have hooked a big perch")
+            print(randomnumber)
             fish = "perch"
             self.set_next_state(STATE_FIGHTING)
             self.agent.set("fish", fish)
         elif randomnumber > 0.5:
             print("you have hooked a tiny roach")
+            print(randomnumber)
             fish = "roach"
             self.set_next_state(STATE_FIGHTING)
+            #a intresting thing we here is from the spade agent module whihch self.agent.set() method
+            #gives us an option to store the fishes namne which is a knowledge item in this case in the agents knowlegde base.
             self.agent.set("fish", fish)
 
 
@@ -147,6 +171,7 @@ class StateFighting(State):
         # First scenario: The user chose the aggresive play and it was the correct move.
         if winningword == "yes" and userInput == "yes":
             print(f"Smart choice friend, putting more pressure on the {hookedfish}")
+            print(randomnumber)
             # Here we store the succesful move in the agents memory for future reference.
             self.agent.set("yes", winningword)
             await asyncio.sleep(2)
@@ -155,6 +180,7 @@ class StateFighting(State):
             # Scenario 2: The user chose passive action and it was the correct move.
         elif winningword == "no" and userInput == "no":
             print(f"Coward choice but efficient, releasing pressure on {hookedfish}")
+            print(randomnumber)
             # Store the successful move.
             self.agent.set("no", winningword)
             await asyncio.sleep(2)
@@ -168,6 +194,8 @@ class StateFighting(State):
 
 class StateFighting2(State):
     async def run(self):
+        # Retrieve the specific fish object/string from the agent's Knowledge Base.
+        # This ensures continuity from the previous state (ex we fight the same fish we hooked).
         hookedfish = self.agent.get("fish")
         print("ROUND 2")
         await asyncio.sleep(2)
@@ -177,9 +205,11 @@ class StateFighting2(State):
         print("(YES = 50% chance to catch, but risk of line snap)")
         print("(NO  = 50% chance to catch, playing it safe but fish might escape)")
 
+        # We use the random module to simulate the unpredictable nature of fishing.
+        # This determines what the correct action would have been for this specific event.
         randomnumber = random.random()
 
-
+        # Determine the winning condation based on a 50/50 probability
         if randomnumber >= 0.5:
             winningword = "yes"
         else:
@@ -202,6 +232,8 @@ class StateFighting2(State):
 
 class StateFighting3(State):
     async def run(self):
+        # Retrieve the specific fish object/string from the agent's Knowledge Base.
+        # This ensures continuity from the previous state (ex we fight the same fish we hooked).
         hookedfish = self.agent.get("fish")
         print(f"\nROUND 3 FINAL")
         await asyncio.sleep(2)
@@ -209,9 +241,12 @@ class StateFighting3(State):
         await asyncio.sleep(3)
         print("Do you want to force it to the net? (yes/no)")
         userInput = input("Write yes or no: ").lower()
+        # We use the random module to simulate the unpredictable nature of fishing.
+        # This determines what the correct action would have been for this specific event.
         randomnumber = random.random()
         winningword = ""
 
+        # Determine the winning condation based on a 50/50 probability
         if randomnumber >= 0.5:
             winningword = "yes"
         else:
@@ -231,7 +266,7 @@ class StateFighting3(State):
             self.set_next_state(STATE_LOST)
 
 # This state represents the immediate aftermath of losing the fish.
-# It acts as a transitional state between the gameplay failure and the final stage in our game.
+# It acts as a transitional state between the gameplay failure and the final stages of our game.
 class StateLost(State):
     async def run(self):
         print("The fish was lost")
@@ -290,7 +325,7 @@ class StateTheEnd(State):
 class FSMAgent(Agent):
     async def setup(self):
         # Here we create our fsm behavior object (the container)
-        fsm = ExampleFSMBehaviour()
+        fsm = AgentFSMBehaviour()
         # Here is were we add all our states in the FSMAgent class were we first create an object fsm to later on
         # implement and create our different states.
         # We instaciate our state classes (like StateStanding) and register them to an FSM agent so the agent knows
