@@ -24,8 +24,7 @@ STATE_DEFEAT = "STATE_DEFEAT"
 STATE_ENDING = "STATE_ENDING"
 STATE_THEEND = "THEEND"
 
-#här har vi använt os av FSM behaviour för hålla kolla så att agenten slutar och börjar i rätt states under uppbyggnad
-#av spelet
+
 
 #here vi declare the FSMBehavour from spade, we also use diffrenet prints to keep track of what state it start in and
 #what state it ends in.
@@ -39,12 +38,7 @@ class AgentFSMBehaviour(FSMBehaviour):
         await self.agent.stop()
 
 
-#våran första state som har olika print för att ge känslan av en "historia" av en fiskedag
-# vi använder en simpel input parameter samt en ifsats så användaren kan avgör om den vill fiska idag eller
-#vänta till nästa dag
-#vi använder os av asyncio sleep för att allting inte ska printas ut på en och samma gång, dettaa ger lite
-#pauser så att den känns som en "historia"
-#beroende på input användaren slussen den vidare till antingen kast staten eööer samma
+
 #here is our first state which has multiple prints to give the feeling of a "story" of a fishing day
 # we use a simple input parameter and a if statement so the user can choose if they want to fish this day or not.
 #we use asyncio sleep so every print is not printed at the exact same time to give a "storytelling" feeling
@@ -62,8 +56,7 @@ class StateStanding(State):
             print("Goes home for today and returns the next day")
             self.set_next_state(STATE_STANDING)
 
-#vi använder samma principer som i förra staten men har lagt in en chans att man råkar kasta draget i ett träd
-#detta gjorde vi genom att importera random modluen så vi på ett enkelt sätt kan slumpa en siffra mellan 0-1
+
 
 #We are using the same syntax/principles from the last state but we have added a state were you can accidently throw the lure into a tree
 #we did this nu importing the random module so that we could easily implement the logic of randomising a float number between 0 and 1
@@ -77,8 +70,7 @@ class StateCasting(State):
             self.set_next_state(STATE_TREE)
         else:
             self.set_next_state(STATE_WAITING)
-#om man fastnar i ett träd får använder en möjlighet om den vil gör ett nytt försök
-# och sätta på ett nytt drag eller om den vill sluta fiska för dagen, då slussen den till "förlust" state
+
 #If u get stuck in a tree you'll get the opportunity to try casting again
 #and to put on a new lure or if the user wants to quit the fishing game for the day, then it will move on to STATE_LOST
 class StateTree(State):
